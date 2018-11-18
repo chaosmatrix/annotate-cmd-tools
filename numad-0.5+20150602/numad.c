@@ -1008,6 +1008,7 @@ int bind_process_and_migrate_memory(process_data_p p) {
         numad_log(LOG_WARNING, "Could not scandir task list for PID: %d\n", p->pid);
         return 0;  // Assume the process terminated
     }
+    // * threads under the process
     // Set the affinity of each task in the process...
     for (int namelist_ix = 0;  (namelist_ix < num_tasks);  namelist_ix++) {
         int tid = atoi(namelist[namelist_ix]->d_name);
@@ -1066,6 +1067,10 @@ int bind_process_and_migrate_memory(process_data_p p) {
         SET_BIT(min_dest_node_id, dest_mask);
         numad_log(LOG_DEBUG, "Moving memory from node: %d to node %d\n", max_from_node_id, min_dest_node_id);
         // Lie about num_nodes being one bigger because of kernel bug...
+        //
+        // * move process memory from one node to another
+        // * Pages shared with another process will be moved only if the
+        // * initiating process has the CAP_SYS_NICE privilege.
         int rc = syscall(__NR_migrate_pages, p->pid, num_nodes + 1, from_mask, dest_mask);
         if (rc > 2) {
             // rc == the number of pages that could not be moved.  
