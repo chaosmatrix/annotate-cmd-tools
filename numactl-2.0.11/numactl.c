@@ -320,6 +320,7 @@ int set_policy = -1;
 
 void setpolicy(int pol)
 {
+       // * not support setpolicy more than onece
 	if (set_policy != -1)
 		usage_msg("Conflicting policies");
 	set_policy = pol;
@@ -432,6 +433,7 @@ int main(int ac, char **av)
 			hardware();
 			exit(0);
 		case 'i': /* --interleave */
+                    // * if system not suuport NUMA, exit(1)
 			checknuma();
 			if (parse_all)
 				mask = numactl_parse_nodestring(optarg, ALL);
@@ -444,10 +446,14 @@ int main(int ac, char **av)
 
 			errno = 0;
 			did_node_cpu_parse = 1;
+                    // * update "set_policy" to MPOL_INTERLEAVE
 			setpolicy(MPOL_INTERLEAVE);
 			if (shmfd >= 0)
+                           // * memory and share memory
+                           // * syscall6(__NR_mbind, (long)start, len, mode, (long)nmask, maxnode, flags);
 				numa_interleave_memory(shmptr, shmlen, mask);
 			else
+                          // * syscall(__NR_set_mempolicy,mode,nmask,maxnode);
 				numa_set_interleave_mask(mask);
 			checkerror("setting interleave mask");
 			break;
@@ -553,6 +559,7 @@ int main(int ac, char **av)
 			checkerror("local allocation");
 			break;
 		case 'S': /* --shm */
+                    // * exclusive --cpubind ?
 			check_cpubind(did_cpubind);
 			nopolicy();
 			attach_sysvshm(optarg, "--shm");
@@ -656,6 +663,7 @@ int main(int ac, char **av)
 	
 	if (*av == NULL)
 		usage();
+       // * exec command
 	execvp(*av, av);
 	complain("execution of `%s': %s\n", av[0], strerror(errno));
 	return 0; /* not reached */
