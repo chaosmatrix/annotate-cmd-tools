@@ -26,3 +26,18 @@ Please Contact me to remove it.
         * enable NUMA interleaving
     * echo never > /sys/kernel/mm/transparent_hugepage/enabled
         * disable Transparent HugePages, it didn't play nice with NUMA systems
+
+## numactl-2.0.11
+1. Where To download:
+    * https://packages.debian.org/stretch/numactl
+    * http://deb.debian.org/debian/pool/main/n/numactl/numactl_2.0.11.orig.tar.gz
+2. What It Do:
+    ```
+    Solve NUMA System Problem,
+    run process with given cpu scheduling policy and memory policy,
+    it also affect child process
+    ```
+3. Example:
+    * start mysql service: numactl --interleave=all /etc/init.d/mysql start
+    * start java progam
+    * ......
